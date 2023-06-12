@@ -1,8 +1,10 @@
-# @jet-lab/e2e-react-adapter
+# @parcl-finance/e2e-react-adapter
 
 ## What is it?
 
-@jetlab/e2e-react-adapter is a test adapter for solana decentralised applications. It allows to interact with your application without having to go through a browser extension, this in turn enables end-to-end testing. It also allows to programmatically reject transaction, so you can test the sad paths too.
+@parcl-finance/e2e-react-adapter is a fork of the test adapter developed by @jet-lab for solana decentralised applications. It allows to interact with your application without having to go through a browser extension, this in turn enables end-to-end testing. It also allows to programmatically reject transaction, so you can test the sad paths too.
+
+We forked this in order to add missing functionality quickly without having to bother the @jet-lab team.
 
 ## Why?
 
@@ -10,14 +12,14 @@ We have found difficult to integrate a solid end-to-end test suite by using what
 
 ## Installation
 
-To install: `yarn add @jet-lab/e2e-react-adapter` or `npm -i @jet-lab/e2e-react-adapter`
+To install: `yarn add @parcl-finance/e2e-react-adapter` or `npm -i @parcl-finance/e2e-react-adapter`
 
 ## Usage
 
 Simply add your wallet adapter to the array of adapters you normally send to your `wallet-adapter-react`
 
-```typescript
-import  {  WalletProvider  }  from  '@solana/wallet-adapter-react';
+```tsx
+import {  WalletProvider  }  from  '@solana/wallet-adapter-react';
 import {
   PhantomWalletAdapter,
   MathWalletAdapter,
@@ -29,7 +31,7 @@ import { E2EWalletAdapter } from 'e2e-react-adapter';
 import { useMemo } from 'react';
 import Main from './Main'
 
-export  function  App(): JSX.Element  {
+export function App() {
   const wallets = useMemo(() => [
     new PhantomWalletAdapter(),
     new MathWalletAdapter(),
@@ -39,9 +41,12 @@ export  function  App(): JSX.Element  {
     new SlopeWalletAdapter(),
     new E2EWalletAdapter()
   ]}, []);
-  return <WalletProvider  wallets={wallets}  autoConnect>
-	  <Main />
-  </WalletProvier>
+  
+  return (
+    <WalletProvider wallets={wallets}  autoConnect>
+	    <Main />
+    </WalletProvier>
+  )
 }
 ```
 
