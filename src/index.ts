@@ -4,6 +4,7 @@ import {
   SendTransactionOptions,
   WalletName,
   WalletReadyState,
+  isVersionedTransaction,
 } from "@solana/wallet-adapter-base";
 import {
   Connection,
@@ -11,7 +12,9 @@ import {
   PublicKey,
   SendOptions,
   Transaction,
+  VersionedTransaction,
   TransactionSignature,
+  TransactionVersion,
 } from "@solana/web3.js";
 import nacl from "tweetnacl";
 
@@ -71,6 +74,10 @@ export class E2EWalletAdapter extends BaseWalletAdapter {
     }
   }
 
+  get supportedTransactionVersions(): ReadonlySet<TransactionVersion> {
+    return new Set([0, "legacy"]);
+  }
+
   get publicKey(): PublicKey {
     return this._publicKey;
   }
@@ -112,17 +119,25 @@ export class E2EWalletAdapter extends BaseWalletAdapter {
   }
 
   async sendTransaction(
-    transaction: Transaction,
+    transaction: Transaction | VersionedTransaction,
     connection: Connection,
     options: SendTransactionOptions = {}
   ): Promise<TransactionSignature> {
     this._checkForReject();
-    transaction = await this.prepareTransaction(transaction, connection);
     const { signers, ...sendOptions } = options;
-    const signature = await connection.sendTransaction(transaction, [
-      this._underlyingWallet,
-    ]);
-    return signature;
+
+    if (!isVersionedTransaction(transaction)) {
+      transaction = await this.prepareTransaction(transaction, connection);
+      // transaction.sign(this._underlyingWallet);
+
+      const signature = await connection.sendTransaction(transaction, [
+        this._underlyingWallet,
+      ]);
+
+      return signature;
+    } else {
+      return connection.sendTransaction(transaction, options);
+    }
   }
 
   async signTransaction(transaction: Transaction): Promise<Transaction> {

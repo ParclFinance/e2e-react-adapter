@@ -1,4 +1,13 @@
-import { Keypair, PublicKey, Transaction, Connection } from "@solana/web3.js";
+import {
+  Keypair,
+  PublicKey,
+  Transaction,
+  Connection,
+  VersionedTransaction,
+  VersionedMessage,
+  SystemProgram,
+  TransactionMessage,
+} from "@solana/web3.js";
 import { E2EWalletAdapter, E2EWindow } from "../src/index";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
@@ -9,6 +18,12 @@ describe("E2EWalletAdapter", () => {
   const blockhash = "BEHtXd6rwBa6yWgasyQfmwtWGALmAuFrpn9rwsUn16M5";
   connection.sendTransaction = jest.fn().mockResolvedValue("test-signature");
   connection.getRecentBlockhash = jest.fn().mockResolvedValue({
+    blockhash,
+    feeCalculator: {
+      lamportsPerSignature: 1,
+    },
+  });
+  connection.getLatestBlockhash = jest.fn().mockResolvedValue({
     blockhash,
     feeCalculator: {
       lamportsPerSignature: 1,
@@ -62,6 +77,25 @@ describe("E2EWalletAdapter", () => {
       }),
       [adapter._underlyingWallet]
     );
+    expect(signature).toBe("test-signature");
+  });
+
+  it("should approve a VersionedTransaction", async () => {
+    const adapter = new E2EWalletAdapter();
+    adapter.connect();
+    const msg = new TransactionMessage({
+      instructions: [],
+      payerKey: adapter.publicKey,
+      recentBlockhash: blockhash,
+    }).compileToV0Message();
+    const transaction = new VersionedTransaction(msg);
+    const signature = await adapter.sendTransaction(transaction, connection);
+    // expect(connection.sendTransaction).toHaveBeenCalledWith(
+    //   expect.objectContaining({
+    //     recentBlockhash: blockhash,
+    //   }),
+    //   {}
+    // );
     expect(signature).toBe("test-signature");
   });
 
