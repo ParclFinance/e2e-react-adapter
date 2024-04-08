@@ -15,6 +15,7 @@ import {
   VersionedTransaction,
   TransactionSignature,
   TransactionVersion,
+  Signer,
 } from "@solana/web3.js";
 import nacl from "tweetnacl";
 
@@ -142,7 +143,9 @@ export class E2EWalletAdapter extends BaseWalletAdapter {
 
   async signTransaction(transaction: Transaction): Promise<Transaction> {
     this._checkForReject();
-    transaction.sign(this._underlyingWallet);
+
+    //@ts-ignore
+    transaction.sign([this._underlyingWallet]);
     return transaction;
   }
 
